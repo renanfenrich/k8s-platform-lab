@@ -28,7 +28,7 @@ swap_total_kib=$(awk '/SwapTotal:/ { print $2 }' /proc/meminfo 2>/dev/null || tr
 [[ "${swap_total_kib:-0}" -gt 0 ]] && pass 'Swap is configured' || warn 'No swap configured'
 available_disk_kib=$(df -Pk / | awk 'NR == 2 { print $4 }')
 [[ "${available_disk_kib:-0}" -ge 157286400 ]] && pass 'At least 150 GiB free on root filesystem' || warn "Less than 150 GiB free on root filesystem (${available_disk_kib:-unknown} KiB)"
-[[ "${available_disk_kib:-0}" -ge 176160768 ]] || warn 'Nominal 168 GiB VM disk plan exceeds current physical free space; use QCOW2 headroom controls in Phase 4'
+[[ "${available_disk_kib:-0}" -ge 123731968 ]] && pass 'Current disk space exceeds the approved 118 GiB nominal VM plan' || warn 'Current disk space is below the approved 118 GiB nominal VM plan'
 
 section 'Networking'
 if has ip; then
@@ -55,7 +55,8 @@ else
 fi
 
 section 'Required packages and tools'
-for pkg in qemu-kvm libvirt-daemon-system libvirt-clients virtinst virt-manager cloud-image-utils; do
+dpkg-query -W -f='${db:Status-Status}' qemu-system-x86 2>/dev/null | grep -qx installed && pass 'qemu-system-x86 installed (Ubuntu 24.04 QEMU/KVM package)' || warn 'qemu-system-x86 not installed'
+for pkg in libvirt-daemon-system libvirt-clients virtinst virt-manager cloud-image-utils; do
   dpkg-query -W -f='${db:Status-Status}' "$pkg" 2>/dev/null | grep -qx installed && pass "$pkg installed" || warn "$pkg not installed"
 done
 for tool in git kubectl helm talosctl cilium; do

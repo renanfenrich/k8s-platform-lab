@@ -18,4 +18,4 @@ The lab must not change the physical NIC, default route, host firewall, unrelate
 
 ## Capacity note
 
-The VM plan declares up to 168 GiB of virtual disk capacity (40 + 60 + 60 + 8 GiB). QCOW2 images may start thin-provisioned, but Phase 4 must retain a disk headroom guard and cannot assume all virtual capacity may be consumed simultaneously.
+The revised VM plan declares 118 GiB of virtual disk capacity: 30 GiB for the control plane, 40 GiB for each worker, and 8 GiB for the router. This leaves approximately 36 GiB of current physical-disk headroom. QCOW2 images must still be monitored because thin provisioning does not reserve capacity.

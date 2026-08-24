@@ -13,7 +13,7 @@ Establish a read-only baseline before any host or lab change. `scripts/preflight
 
 ## Interpretation
 
-Warnings do not authorize the next phase. A blocker stops phase progression until a separately approved remediation is complete. Review host disk consumption again immediately before VM creation; the virtual-disk plan exceeds the current physical free space if images are fully populated.
+Warnings do not authorize the next phase. A blocker stops phase progression until a separately approved remediation is complete. Review host disk consumption again immediately before VM creation; the 118 GiB virtual-disk plan relies on retaining physical-disk headroom.
 
 ## Safe learning exercise
 
