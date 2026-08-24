@@ -1,0 +1,20 @@
+<network>
+  <name>lab-net</name>
+  <bridge name="virbr-lab" stp="on" delay="0"/>
+  <forward mode="nat">
+    <nat>
+      <port start="1024" end="65535"/>
+    </nat>
+  </forward>
+  <domain name="lab.internal"/>
+  <dns enable="yes"/>
+  <ip address="10.10.10.1" netmask="255.255.255.0">
+    <dhcp>
+      <range start="10.10.10.2" end="10.10.10.253"/>
+      <host mac="52:54:00:10:10:11" name="talos-cp01" ip="10.10.10.11"/>
+      <host mac="52:54:00:10:10:21" name="talos-worker01" ip="10.10.10.21"/>
+      <host mac="52:54:00:10:10:22" name="talos-worker02" ip="10.10.10.22"/>
+      <host mac="52:54:00:10:10:fe" name="router01" ip="10.10.10.254"/>
+    </dhcp>
+  </ip>
+</network>
