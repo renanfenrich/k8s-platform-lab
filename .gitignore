@@ -1,0 +1,13 @@
+generated/
+artifacts/
+*.qcow2
+*.iso
+kubeconfig
+talosconfig
+controlplane.yaml
+worker.yaml
+talos-cp*.yaml
+talos-worker*.yaml
+*.key
+*.pem
+.env
