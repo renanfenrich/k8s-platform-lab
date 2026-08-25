@@ -1,6 +1,6 @@
 SHELL := /usr/bin/env bash
 
-.PHONY: preflight network-define network-autostart network-start network-status tooling-install tooling-validate
+.PHONY: preflight network-define network-autostart network-start network-status tooling-install tooling-validate phase4-create phase4-validate
 
 preflight:
 	./scripts/preflight.sh
@@ -24,3 +24,9 @@ tooling-install:
 
 tooling-validate:
 	./tests/validate-cli-tools.sh
+
+phase4-create:
+	./scripts/create-talos-vms.sh
+
+phase4-validate:
+	./tests/validate-talos-vms.sh
