@@ -36,7 +36,16 @@ if has ip; then
   ip route
   ip route get 10.10.10.1 >/dev/null 2>&1 && pass 'Route lookup for 10.10.10.0/24 completed' || warn 'Cannot resolve route to 10.10.10.0/24'
   ip route get 10.10.100.1 >/dev/null 2>&1 && pass 'Route lookup for 10.10.100.0/24 completed' || warn 'Cannot resolve route to 10.10.100.0/24'
-  ip route | grep -Eq '(^| )10\.10\.10\.0/24|(^| )10\.10\.100\.0/24' && fail 'Existing route conflicts with a proposed lab subnet' || pass 'No direct route conflict for proposed lab subnets'
+  lab_network_route=$(ip route show exact 10.10.10.0/24)
+  load_balancer_route=$(ip route show exact 10.10.100.0/24)
+  if [[ -n "$lab_network_route" && ! "$lab_network_route" =~ "dev virbr-lab" ]]; then
+    fail 'Existing route conflicts with the proposed lab network subnet'
+  elif [[ -n "$lab_network_route" ]]; then
+    pass 'lab-net owns the expected 10.10.10.0/24 route'
+  else
+    pass 'No direct route conflict for the proposed lab network subnet'
+  fi
+  [[ -z "$load_balancer_route" ]] && pass 'No direct route conflict for the LoadBalancer subnet' || fail 'Existing route conflicts with the LoadBalancer subnet'
   ip -brief link | grep -Eqi 'tun|tap|wg|vpn|tailscale|zt|ppp' && warn 'VPN-like interface detected; review its routes before Phase 2' || pass 'No VPN-like interface detected'
 else
   fail "'ip' command is unavailable"
