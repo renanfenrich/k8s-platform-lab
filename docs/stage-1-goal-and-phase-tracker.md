@@ -44,7 +44,7 @@ Only mark a phase complete after its successful validation and commit. Add the c
 - [x] Phase 1 — KVM / QEMU / libvirt installation. Evidence: `0e0cbc2`; QEMU/KVM, libvirt access, groups, and package baseline validated.
 - [x] Phase 2 — libvirt lab network. Evidence: `bb9c05a`; `lab-net` active/persistent/autostarted with NAT, bridge, and reservations.
 - [x] Phase 3 — CLI tooling. Evidence: `4956c16`; checksum-verified `kubectl v1.36.2`, Helm v4.2.4, `talosctl v1.13.8`, and Cilium CLI v0.19.7; `make tooling-validate`, `make preflight`, and lab-network validation passed.
-- [ ] Phase 4 — Talos VM creation.
+- [x] Phase 4 — Talos VM creation. Evidence: `2dca954`; three stopped Talos domains and 30/40/40 GiB QCOW2 disks validated on `lab-net`; `router01` deferred to Phase 10.
 - [ ] Phase 5 — Talos machine configuration.
 - [ ] Phase 6 — Kubernetes bootstrap.
 - [ ] Phase 7 — Cilium installation.
