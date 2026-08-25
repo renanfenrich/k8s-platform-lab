@@ -1,6 +1,6 @@
 SHELL := /usr/bin/env bash
 
-.PHONY: preflight network-define network-autostart network-start network-status
+.PHONY: preflight network-define network-autostart network-start network-status tooling-install tooling-validate
 
 preflight:
 	./scripts/preflight.sh
@@ -18,3 +18,9 @@ network-start:
 network-status:
 	virsh -c qemu:///system net-info lab-net
 	virsh -c qemu:///system net-dumpxml lab-net
+
+tooling-install:
+	./scripts/install-cli-tools.sh
+
+tooling-validate:
+	./tests/validate-cli-tools.sh
