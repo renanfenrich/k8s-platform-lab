@@ -4,13 +4,16 @@ PHASE ?=
 MODE ?= implement
 FINDINGS ?=
 
-.PHONY: preflight validate network-define network-autostart network-start network-status tooling-install tooling-validate phase4-create phase4-validate phase5-generate phase5-validate phase-status phase-context phase-goal phase-preflight phase-validate phase-report
+.PHONY: preflight validate orchestration-validate network-define network-autostart network-start network-status tooling-install tooling-validate phase4-create phase4-validate phase5-generate phase5-validate phase-status phase-context phase-goal phase-preflight phase-validate phase-report
 
 preflight:
 	./scripts/preflight.sh
 
 validate:
 	bash ./tests/validate-current-state.sh
+
+orchestration-validate:
+	bash ./tests/validate-phase-orchestration.sh
 
 # Phase 2: each target maps directly to the documented virsh command.
 network-define:
