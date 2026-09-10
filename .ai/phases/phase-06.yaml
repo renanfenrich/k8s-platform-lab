@@ -7,6 +7,7 @@ objective: >-
   Phase 5 machine configurations without installing Cilium or crossing into Phase 7.
 
 approval_required: true
+execution_mode: guided
 
 sources_of_truth:
   - AGENTS.md
@@ -34,11 +35,8 @@ allowed_changes:
   - add Phase 6 scripts, tests, runbook, and Make targets
   - add verified Talos boot-media acquisition/checksum logic
   - add temporary boot-media attachment/detachment logic for the existing Talos VMs
-  - boot the existing Talos VMs after explicit phase approval
-  - apply the approved machine configs to the three nodes
-  - bootstrap etcd exactly once on talos-cp01
-  - retrieve and configure talosconfig and kubeconfig as ignored local artifacts
-  - validate Talos services, etcd, and Kubernetes API state
+  - prepare exact guided commands for the operator checkpoints below
+  - validate Talos services, etcd, and Kubernetes API state after operator execution
 
 forbidden_changes:
   - install or configure Cilium
@@ -49,12 +47,63 @@ forbidden_changes:
   - delete or recreate existing VM disks or libvirt networks
   - expose lab services publicly
   - begin Phase 7 work
+  - execute operator checkpoints unattended
+
+operator_checkpoints:
+  - id: 6.1
+    name: Inspect runtime and boot-media readiness
+    owner: human
+    purpose: >-
+      Verify current VM/network/host capacity and independently inspect the pinned Talos
+      boot-media source and checksum before anything is started or attached.
+    automation_boundary: read-only discovery and checksum tooling may be prepared automatically
+
+  - id: 6.2
+    name: Attach media and start Talos VMs
+    owner: human
+    purpose: >-
+      Run the exact libvirt commands locally, observe the first Talos maintenance-mode boot,
+      and inspect console/network behavior before machine configuration is applied.
+    automation_boundary: commands may be generated and validated, but not executed unattended
+
+  - id: 6.3
+    name: Apply Talos machine configurations
+    owner: human
+    purpose: >-
+      Apply the already-reviewed per-node configs locally while observing installation and
+      reboot behavior on the control plane and workers.
+    automation_boundary: agent must explain node order, expected transitions, and failure stop conditions first
+
+  - id: 6.4
+    name: Bootstrap etcd exactly once
+    owner: human
+    purpose: >-
+      Execute the one-time Talos bootstrap operation on talos-cp01 and understand why it must
+      not be repeated casually.
+    automation_boundary: agent may prepare the exact command and pre-checks only
+
+  - id: 6.5
+    name: Retrieve access configs and inspect first cluster state
+    owner: human
+    purpose: >-
+      Retrieve talosconfig/kubeconfig locally and inspect Talos health, etcd, Kubernetes API,
+      nodes, and expected pre-Cilium NotReady/Pending state.
+    automation_boundary: read-only validation can be automated after the initial guided inspection
+
+  - id: 6.6
+    name: Detach boot media and verify disk boot
+    owner: human
+    purpose: >-
+      Remove temporary installation media and verify each node boots from its installed disk
+      without altering the existing VM disks or network definitions.
+    automation_boundary: discovery/validation may be automated; detach/reboot commands stay guided
 
 consequential_actions:
   - attach verified Talos boot media to existing VMs
   - boot the three Talos VMs
   - apply the approved Talos machine configs
   - bootstrap etcd once on talos-cp01
+  - retrieve talosconfig and kubeconfig as ignored local artifacts
   - detach boot media and verify disk boot after installation
 
 validation:
@@ -62,6 +111,7 @@ validation:
     - make validate
     - make phase-preflight PHASE=6
   acceptance:
+    - all operator checkpoints were completed and evidence was inspected
     - all three Talos nodes are installed and boot from their existing virtual disks
     - Talos control-plane services report healthy enough to serve the Kubernetes API
     - etcd is bootstrapped exactly once and reports healthy
@@ -89,5 +139,5 @@ ai_budget:
     Terra cannot resolve with a narrowly scoped follow-up. Astra is not the default.
 
 stop_condition: >-
-  Stop after Phase 6 implementation, validation, documentation, and report. Do not
-  install Cilium or prepare Phase 7 implementation in the same execution.
+  Stop after Phase 6 implementation, guided checkpoints, validation, documentation, and
+  report. Do not install Cilium or prepare Phase 7 implementation in the same execution.
