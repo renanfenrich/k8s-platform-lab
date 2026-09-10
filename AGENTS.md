@@ -1,6 +1,6 @@
 # AI agent instructions
 
-This repository uses explicit phase contracts to keep AI-assisted work bounded, reproducible, and reviewable.
+This repository uses explicit phase contracts to keep AI-assisted work bounded, reproducible, reviewable, and useful as a study lab.
 
 ## Sources of truth
 
@@ -18,6 +18,16 @@ This repository uses explicit phase contracts to keep AI-assisted work bounded, 
 - Prefer deterministic repository validation over repeated AI review.
 - Use the lowest-capability model/reasoning level that can safely complete the task; model guidance belongs in the phase contract.
 - Stop after the active phase has been implemented, validated, documented, and reported. Never continue into the next phase automatically.
+
+## Study-lab participation
+
+Guided execution is the default. The human operator must participate in learning-critical decisions and commands instead of delegating the entire phase to an agent.
+
+- Respect `operator_checkpoints` in the active phase contract.
+- At an operator checkpoint, explain what the command changes, what to observe, the expected output/state, risk, and rollback boundary.
+- Present the exact local command(s) for the operator to run, then stop for the resulting output or explicit approval before continuing.
+- Do not execute operator-owned commands through automation or collapse multiple checkpoints into one unattended run.
+- Automate repetitive discovery, formatting, static validation, evidence collection, and low-risk checks where doing so does not hide the mechanism being studied.
 
 ## Safety boundary
 
