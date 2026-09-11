@@ -1,0 +1,143 @@
+phase: 6
+name: Kubernetes bootstrap
+status: proposed
+
+objective: >-
+  Bootstrap the Talos Kubernetes control plane and workers from the already-approved
+  Phase 5 machine configurations without installing Cilium or crossing into Phase 7.
+
+approval_required: true
+execution_mode: guided
+
+sources_of_truth:
+  - AGENTS.md
+  - .ai/project-policy.md
+  - docs/stage-1-goal-and-phase-tracker.md
+  - versions.env
+
+read_scope:
+  - infrastructure/talos/
+  - infrastructure/libvirt/
+  - scripts/
+  - tests/
+  - Makefile
+
+preconditions:
+  - main or the active phase branch reflects completed Phase 5 state
+  - host and libvirt state have been revalidated locally
+  - lab-net is active and matches the approved addressing
+  - all three Talos VMs exist with the approved resources and are stopped before execution
+  - final per-node Talos configs exist locally and pass strict validation
+  - sufficient host disk and memory headroom has been rechecked
+  - Talos boot media source, version, checksum, and attachment method have been reviewed
+
+allowed_changes:
+  - add Phase 6 scripts, tests, runbook, and Make targets
+  - add verified Talos boot-media acquisition/checksum logic
+  - add temporary boot-media attachment/detachment logic for the existing Talos VMs
+  - prepare exact guided commands for the operator checkpoints below
+  - validate Talos services, etcd, and Kubernetes API state after operator execution
+
+forbidden_changes:
+  - install or configure Cilium
+  - enable kube-proxy
+  - change CNI from none
+  - change any pinned version without a separate compatibility review and explicit approval
+  - modify the host firewall, physical NIC, default route, partitions, bootloader, desktop, unrelated Docker/VPN configuration, or unrelated development tooling
+  - delete or recreate existing VM disks or libvirt networks
+  - expose lab services publicly
+  - begin Phase 7 work
+  - execute operator checkpoints unattended
+
+operator_checkpoints:
+  - id: 6.1
+    name: Inspect runtime and boot-media readiness
+    owner: human
+    purpose: >-
+      Verify current VM/network/host capacity and independently inspect the pinned Talos
+      boot-media source and checksum before anything is started or attached.
+    automation_boundary: read-only discovery and checksum tooling may be prepared automatically
+
+  - id: 6.2
+    name: Attach media and start Talos VMs
+    owner: human
+    purpose: >-
+      Run the exact libvirt commands locally, observe the first Talos maintenance-mode boot,
+      and inspect console/network behavior before machine configuration is applied.
+    automation_boundary: commands may be generated and validated, but not executed unattended
+
+  - id: 6.3
+    name: Apply Talos machine configurations
+    owner: human
+    purpose: >-
+      Apply the already-reviewed per-node configs locally while observing installation and
+      reboot behavior on the control plane and workers.
+    automation_boundary: agent must explain node order, expected transitions, and failure stop conditions first
+
+  - id: 6.4
+    name: Bootstrap etcd exactly once
+    owner: human
+    purpose: >-
+      Execute the one-time Talos bootstrap operation on talos-cp01 and understand why it must
+      not be repeated casually.
+    automation_boundary: agent may prepare the exact command and pre-checks only
+
+  - id: 6.5
+    name: Retrieve access configs and inspect first cluster state
+    owner: human
+    purpose: >-
+      Retrieve talosconfig/kubeconfig locally and inspect Talos health, etcd, Kubernetes API,
+      nodes, and expected pre-Cilium NotReady/Pending state.
+    automation_boundary: read-only validation can be automated after the initial guided inspection
+
+  - id: 6.6
+    name: Detach boot media and verify disk boot
+    owner: human
+    purpose: >-
+      Remove temporary installation media and verify each node boots from its installed disk
+      without altering the existing VM disks or network definitions.
+    automation_boundary: discovery/validation may be automated; detach/reboot commands stay guided
+
+consequential_actions:
+  - attach verified Talos boot media to existing VMs
+  - boot the three Talos VMs
+  - apply the approved Talos machine configs
+  - bootstrap etcd once on talos-cp01
+  - retrieve talosconfig and kubeconfig as ignored local artifacts
+  - detach boot media and verify disk boot after installation
+
+validation:
+  preflight:
+    - make validate
+    - make phase-preflight PHASE=6
+  acceptance:
+    - all operator checkpoints were completed and evidence was inspected
+    - all three Talos nodes are installed and boot from their existing virtual disks
+    - Talos control-plane services report healthy enough to serve the Kubernetes API
+    - etcd is bootstrapped exactly once and reports healthy
+    - kubectl can reach the Kubernetes API using the retrieved kubeconfig
+    - CNI remains none
+    - kube-proxy remains disabled
+    - no Cilium resources are installed
+    - no host safety-boundary changes occurred
+
+expected_transitional_state:
+  - Kubernetes nodes may remain NotReady until Phase 7 installs Cilium
+  - network-dependent cluster workloads may remain Pending or unready until Phase 7
+
+rollback_boundary:
+  - stop and report on unexpected state rather than resetting Talos, restoring etcd, deleting VM disks, or recreating the network
+  - destructive rollback requires separate explicit confirmation
+
+ai_budget:
+  implementation_model: terra
+  implementation_effort: medium
+  routine_fix_model: terra
+  routine_fix_effort: low
+  escalation: >-
+    Use Sol medium only for concrete Talos/bootstrap/distributed-system failures that
+    Terra cannot resolve with a narrowly scoped follow-up. Astra is not the default.
+
+stop_condition: >-
+  Stop after Phase 6 implementation, guided checkpoints, validation, documentation, and
+  report. Do not install Cilium or prepare Phase 7 implementation in the same execution.

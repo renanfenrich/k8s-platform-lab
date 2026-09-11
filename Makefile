@@ -1,9 +1,19 @@
 SHELL := /usr/bin/env bash
 
-.PHONY: preflight network-define network-autostart network-start network-status tooling-install tooling-validate phase4-create phase4-validate phase5-generate phase5-validate
+PHASE ?=
+MODE ?= implement
+FINDINGS ?=
+
+.PHONY: preflight validate orchestration-validate network-define network-autostart network-start network-status tooling-install tooling-validate phase4-create phase4-validate phase5-generate phase5-validate phase-status phase-context phase-goal phase-preflight phase-validate phase-report
 
 preflight:
 	./scripts/preflight.sh
+
+validate:
+	bash ./tests/validate-current-state.sh
+
+orchestration-validate:
+	bash ./tests/validate-phase-orchestration.sh
 
 # Phase 2: each target maps directly to the documented virsh command.
 network-define:
@@ -36,3 +46,26 @@ phase5-generate:
 
 phase5-validate:
 	./tests/validate-talos-configs.sh
+
+phase-status:
+	@bash ./scripts/phase.sh status
+
+phase-context:
+	@test -n "$(PHASE)" || (echo 'PHASE is required, e.g. make phase-context PHASE=6' >&2; exit 2)
+	@bash ./scripts/phase.sh context "$(PHASE)"
+
+phase-goal:
+	@test -n "$(PHASE)" || (echo 'PHASE is required, e.g. make phase-goal PHASE=6 MODE=implement' >&2; exit 2)
+	@bash ./scripts/phase.sh goal "$(PHASE)" "$(MODE)" "$(FINDINGS)"
+
+phase-preflight:
+	@test -n "$(PHASE)" || (echo 'PHASE is required, e.g. make phase-preflight PHASE=6' >&2; exit 2)
+	@bash ./scripts/phase.sh preflight "$(PHASE)"
+
+phase-validate:
+	@test -n "$(PHASE)" || (echo 'PHASE is required, e.g. make phase-validate PHASE=6' >&2; exit 2)
+	@bash ./scripts/phase.sh validate "$(PHASE)"
+
+phase-report:
+	@test -n "$(PHASE)" || (echo 'PHASE is required, e.g. make phase-report PHASE=6' >&2; exit 2)
+	@bash ./scripts/phase.sh report "$(PHASE)"
