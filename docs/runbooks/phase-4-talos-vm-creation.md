@@ -17,4 +17,4 @@ The creation target defines the checked-in XML files and creates the matching QC
 
 ## Rollback boundary
 
-The phase creates three domains and three disks. Do not delete them without separate explicit destructive-action approval. Phase 5 may boot and configure these existing domains after its own proposal and approval.
+The phase creates three domains and three disks. Do not delete them without separate explicit destructive-action approval. Phase 5 generated and validated machine configurations offline only; booting and applying those configurations is deferred to the separately approved Phase 6 bootstrap runbook.
